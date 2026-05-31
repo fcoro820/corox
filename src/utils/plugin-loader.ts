@@ -3,7 +3,15 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { logger } from './logger.js';
-import { CoroxPlugin } from '../types/plugin.js';
+import { CoroxPlugin, PluginHooks } from '../types/plugin.js';
+
+export const activeHooks: {
+  beforeCommand: PluginHooks['beforeCommand'][];
+  afterCommand: PluginHooks['afterCommand'][];
+} = {
+  beforeCommand: [],
+  afterCommand: [],
+};
 
 export async function loadPlugins(program: Command) {
   const pluginsDir = path.join(os.homedir(), '.corox', 'plugins');
@@ -15,18 +23,20 @@ export async function loadPlugins(program: Command) {
 
     if (jsFiles.length === 0) return;
 
-    logger.info(`Loading ${jsFiles.length} plugin(s)...`);
-
     for (const file of jsFiles) {
       const pluginPath = path.join(pluginsDir, file);
       const pluginModule = await import(`file://${pluginPath}`);
       const plugin: CoroxPlugin = pluginModule.default;
       
       if (plugin && plugin.init && plugin.metadata) {
+        // 1. Run core initialization
         plugin.init(program);
-        logger.info(`Plugin loaded: ${plugin.metadata.name} v${plugin.metadata.version} - ${plugin.metadata.description}`);
-      } else {
-        logger.warn(`Plugin ${file} is invalid. It must export a default object with metadata and init function.`);
+        
+        // 2. Register hooks if they exist
+        if (plugin.hooks) {
+          if (plugin.hooks.beforeCommand) activeHooks.beforeCommand.push(plugin.hooks.beforeCommand);
+          if (plugin.hooks.afterCommand) activeHooks.afterCommand.push(plugin.hooks.afterCommand);
+        }
       }
     }
   } catch (error) {
