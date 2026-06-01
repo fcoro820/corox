@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Corox Deployment Script
-echo "🚀 Starting Corox CLI Deployment..."
+echo "🚀 Starting Corox CLI Deployment (v1.2.0)..."
 
 # 1. Build the project
 echo "📦 Building project..."
@@ -12,11 +12,11 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-# 2. Git Push
-echo "☁️ Pushing to GitHub..."
+# 2. Git Push (to dev branch)
+echo "☁️ Pushing to GitHub (dev)..."
 git add .
-git commit -m "feat: implementation of AI Agent with memory, tools, and advanced TUI"
-git push origin main
+git commit -m "chore: finalize release v1.2.0" || echo "Nothing to commit"
+git push origin dev
 
 if [ $? -ne 0 ]; then
   echo "❌ Git push failed. Make sure you are authenticated."
@@ -32,4 +32,4 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-echo "✅ Deployment Successful! Corox v1.1.0 is now live."
+echo "✅ Deployment Successful! Corox v1.2.0 is now live on NPM."
