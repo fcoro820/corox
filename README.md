@@ -1,6 +1,6 @@
-# 🚀 Corox CLI
+# 🚀 Corox CLI: The Ultimate Developer Productivity Hub
 
-**Corox** is a high-performance, interactive command-line ecosystem designed to transform the developer's workflow. It's not just a tool; it's a **Productivity Hub** that combines AI-powered assistance, system diagnostics, project scaffolding, and automation into a single, elegant interface.
+**Corox** is a high-performance, interactive command-line ecosystem designed to eliminate friction in the modern development lifecycle. It is not just a CLI tool; it is a **Productivity Hub** that merges AI-driven intelligence, system diagnostics, automated project scaffolding, and a full-screen TUI experience into one elegant interface.
 
 ![NPM Version](https://img.shields.io/npm/v/corox-cli?style=flat-square&color=blue)
 ![License](https://img.shields.io/npm/l/corox-cli?style=flat-square&color=green)
@@ -9,47 +9,50 @@
 
 ---
 
-## 🌟 Key Pillars of Corox
+## 🌟 Core Pillars
 
 ### 🤖 1. Hybrid AI Intelligence
-Corox breaks the dependency on a single AI provider. It features a **Provider-Agnostic Architecture**, allowing you to switch between cloud and local LLMs seamlessly.
+Corox removes the vendor lock-in. Through a **Provider-Agnostic Architecture**, you can switch between cutting-edge cloud LLMs and completely private local models.
 
-- **Multi-Provider Support**: 
+- **Supported Providers**: 
   - ☁️ **Cloud**: OpenAI, Anthropic (Claude), Google (Gemini), Groq (Ultra-Fast).
-  - 🏠 **Local**: Full integration with **Ollama** for 100% private, free AI.
-- **AI-Powered Commands**:
-  - `corox ai-explain <file>`: Get deep technical explanations of any code file.
-  - `corox ai-fix <error>`: Paste a terminal error and get a step-by-step fix.
-  - `corox commit`: Analyzes your `git diff` and writes professional Conventional Commit messages.
+  - 🏠 **Local**: Native integration with **Ollama** for 100% privacy.
+- **Intelligence Suite**:
+  - `ai-explain`: Deep technical decomposition of complex code.
+  - `ai-fix`: Error diagnostics and step-by-step remediation.
+  - `commit`: Context-aware AI commit messages based on `git diff`.
 
 ### ⚙️ 2. Workflow Automation
-Stop repeating the same 5 commands. Corox allows you to define complex task sequences in a `.coroxrc` file.
+Automate repetitive terminal sequences. Define complex pipelines in a `.coroxrc` file and execute them with a single command.
 
-- **Custom Workflows**: Define sequential or parallel shell commands.
-- **Dynamic Variables**: Use variables like `${branch}` to make workflows adaptive.
-- **One-Command Execution**: Run entire pipelines with `corox run <workflow-name>`.
+- **Dynamic Workflows**: Sequence shell commands, handle parallel execution, and use environment-aware variables (e.g., `${branch}`).
+- **Remote Import**: Import professional workflow templates via URL to standardize team processes.
 
 ### 🛠️ 3. Developer Power Tools
-A suite of utilities that solve real-world developer frustrations:
+Utility tools designed to solve the "small frustrations" that break developer flow:
 
-- **Advanced Scaffolder**: Generate projects with industry-standard architectures (e.g., Clean Architecture for Express.js).
-- **Port Killer**: Instantly terminate processes blocking your ports (`corox port 3000`).
-- **API Client**: A lightweight HTTP client with beautiful tabular output (`corox request GET <url>`).
-- **Smart Cleaner**: Recursively wipe `node_modules` across multiple projects to reclaim disk space.
+- **Industry Scaffolder**: Generate projects following Clean Architecture or Layered patterns.
+- **Port Killer**: Instantly find and terminate zombie processes blocking your ports.
+- **HTTP Client**: A lightweight API tester with beautifully formatted tabular output.
+- **Disk Purge**: Recursively find and wipe `node_modules` to reclaim gigabytes of space.
 
 ### 🧩 4. Extensible Plugin System
-Corox is designed to grow. You can extend its functionality without touching the core code.
+Corox is an open platform. You can inject new functionality without modifying the core engine.
 
-- **Dynamic Loading**: Install plugins via URL.
-- **Lifecycle Hooks**: Plugins can hook into `beforeCommand` and `afterCommand` events to modify Corox's behavior.
+- **Dynamic Loading**: Install and load plugins at runtime via URL.
+- **Lifecycle Hooks**: Plugins can register `beforeCommand` and `afterCommand` hooks to modify behavior or add telemetry.
 
 ---
 
-## 🖥️ Dual-Mode Experience
+## 🖥️ Dual-Mode Interaction
 
-Corox offers two ways to interact:
-1. **Linear Mode (`corox`)**: A fast, prompt-driven interface for quick tasks.
-2. **TUI Dashboard (`corox dashboard`)**: A full-screen interactive terminal dashboard with real-time system monitoring, keyboard navigation, and a persistent console.
+Corox adapts to your current need:
+
+1. **Linear Mode (`corox <command>`)**: High-speed, prompt-driven interaction for quick tasks.
+2. **TUI Dashboard (`corox dashboard`)**: A full-screen interactive terminal dashboard featuring:
+   - Real-time system monitoring (CPU/RAM).
+   - Keyboard-driven menu navigation.
+   - Integrated persistent console output.
 
 ---
 
@@ -67,66 +70,98 @@ npm install -g corox-cli
 
 ---
 
-## 🚀 Quick Start Guide
+## 🚀 Getting Started
 
 ### 1. Configuration
-Run the config menu to set up your AI provider and theme:
+Initialize your preferences, theme, and default AI provider:
 ```bash
 corox config
 ```
 
-### 2. AI Setup (.env)
-To use AI features, add your keys to a `.env` file in your project or home directory:
+### 2. AI API Setup
+Create a `.env` file in your home directory or project root:
 ```env
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 GOOGLE_API_KEY=AIza...
 GROQ_API_KEY=gsk_...
-# For Local AI, just install Ollama and run: ollama serve
+# For Local AI, simply install Ollama and run: ollama serve
 ```
 
-### 3. Example Commands
-```bash
-# Initialize a professional project
-corox init
+---
 
-# Explain a complex function
-corox ai-explain src/utils/auth.ts
+## 📖 Command Reference
 
-# Kill a hanging process on port 8080
-corox port 8080
+### 🛠️ General Commands
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `dashboard` | Launch full-screen TUI Dashboard | `corox dashboard` |
+| `init` | Scaffold a new project from template | `corox init` |
+| `status` | Check system and tool status | `corox status` |
+| `sys-info` | Display detailed system diagnostics | `corox sys-info` |
+| `config` | Open settings menu | `corox config` |
 
-# Clean up disk space
-corox clean .
+### 🤖 AI Intelligence
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `ai-explain` | Explain a specific code file | `corox ai-explain src/auth.ts` |
+| `ai-fix` | Get a fix for a terminal error | `corox ai-fix "Error: EADDRINUSE"` |
+| `commit` | AI-generated conventional commit | `corox commit` |
+| `model` | List available local Ollama models | `corox model` |
 
-# Launch the TUI Dashboard
-corox dashboard
-```
+### ⚙️ Automation & Tools
+| Command | Description | Example |
+| :--- | :--- | :--- |
+| `run <name>` | Execute a workflow from `.coroxrc` | `corox run deploy-prod` |
+| `workflows` | List all registered workflows | `corox workflows` |
+| `import <url>` | Import remote workflow templates | `corox import https://...` |
+| `port <num>` | Kill process on specific port | `corox port 3000` |
+| `request` | Make an HTTP request | `corox request GET https://api.com` |
+| `clean <path>` | Wipe node_modules recursively | `corox clean .` |
 
 ---
 
 ## 🏗️ Engineering Architecture
 
-Corox is built with a focus on scalability and maintainability:
+Corox is engineered for scalability using professional design patterns:
 
-- **Language**: TypeScript (Strict Mode)
-- **Router**: `commander` for robust CLI argument parsing.
-- **TUI**: `blessed` & `blessed-contrib` for the interactive dashboard.
-- **State**: `conf` for persistent user settings.
-- **Testing**: `Vitest` for unit and integration testing.
-- **Pattern**: Provider Pattern for AI and Command Pattern for logic separation.
+### 🧩 Provider Pattern (AI)
+The `AIProvider` interface abstracts the communication with different LLMs. Adding a new AI provider only requires implementing a new class without touching the core logic.
+
+### ⚡ Command Pattern (CLI)
+Each CLI action is decoupled into standalone command modules. This ensures that the `index.ts` remains a thin router, and each command can be tested and developed in isolation.
+
+### 🔄 Plugin Lifecycle
+Plugins hook into the `runSafe` execution wrapper:
+`beforeCommand` $\rightarrow$ `Command Logic` $\rightarrow$ `afterCommand`
+
+### 📁 Project Structure
+```text
+corox-cli/
+├── src/
+│   ├── commands/      # Individual command implementations
+│   ├── tui/           # Blessed-based TUI Dashboard logic
+│   ├── utils/
+│   │   ├── ai/        # AI Provider implementations (OpenAI, Ollama, etc.)
+│   │   ├── api.ts     # Version checking & remote API calls
+│   │   └── logger.ts  # Chalk-powered consistent logging
+│   ├── templates/     # Project scaffolding blueprints
+│   ├── types/         # TypeScript interfaces and types
+│   └── index.ts       # Entry point and Command Router
+├── tests/             # Vitest unit and integration tests
+└── .coroxrc           # (User-defined) Workflow configurations
+```
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Whether it's a new AI provider, a useful plugin, or a bug fix.
+We welcome contributions from the community! 
 
-1. Fork the repository.
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`).
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`).
-4. Push to the branch (`git push origin feature/AmazingFeature`).
-5. Open a Pull Request.
+1. **Fork** the repository.
+2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`).
+3. **Commit** using Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`).
+4. **Push** and open a Pull Request.
 
 ## 📄 License
-Distributed under the ISC License. See `LICENSE` for more information.
+Distributed under the **ISC License**. See `LICENSE` for more information.
