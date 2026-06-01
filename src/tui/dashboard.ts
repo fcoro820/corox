@@ -1,7 +1,7 @@
 import blessed from 'blessed';
 import contrib from 'blessed-contrib';
 import os from 'os';
-import { logger, LogTransport, ConsoleTransport } from '../utils/logger.js';
+import { logger, LogTransport } from '../utils/logger.js';
 import { setupProject } from '../commands/setup.js';
 import { showSystemInfo } from '../commands/system.js';
 import { cleanModules } from '../commands/clean.js';
@@ -16,7 +16,7 @@ class TuiTransport implements LogTransport {
     this.thoughtBox = thoughtBox;
   }
 
-  async log(level: string, msg: string): Promise<void> {
+  async log({ level, msg }) {
     const prefix = {
       info: 'ℹ ',
       success: '✔ ',
@@ -27,15 +27,9 @@ class TuiTransport implements LogTransport {
     }[level] || '';
 
     if (level === 'thought' || level === 'title') {
-      // Route thinking and roadmap to the Thought Panel
-      if (this.thoughtBox && typeof this.thoughtBox.log === 'function') {
-        this.thoughtBox.log(`${prefix}${msg}`);
-      }
+      if (this.thoughtBox?.log) this.thoughtBox.log(`${prefix}${msg}`);
     } else {
-      // Route everything else to the Console Panel
-      if (this.consoleBox && typeof this.consoleBox.log === 'function') {
-        this.consoleBox.log(`${prefix}${msg}`);
-      }
+      if (this.consoleBox?.log) this.consoleBox.log(`${prefix}${msg}`);
     }
   }
 }
@@ -46,15 +40,12 @@ export async function startDashboard() {
     title: 'Corox Command Center'
   });
 
-  // Grid Layout: 12 rows, 12 cols
   const grid = new (contrib.grid as any)({ rows: 12, cols: 12, screen: screen });
 
-  // 1. Header
   const header = grid.set(0, 0, 1, 12, (contrib as any).border({}))
     .set('style', { fg: 'cyan', bold: true });
   header.setContent('🚀 COROX AI COMMAND CENTER v1.2.0');
 
-  // 2. Menu Panel (Left)
   const menu = grid.set(1, 0, 9, 3, (contrib as any).border({}))
     .set('label', 'Navigation');
 
@@ -76,26 +67,27 @@ export async function startDashboard() {
     menu.setContent(menuText);
   };
 
-  // 3. Agent Thought Panel (Middle) - THE BRAIN
   const thoughtBox = grid.set(1, 3, 9, 4, (contrib as any).log({
     label: 'Agent Reasoning & Roadmap'
   }));
   thoughtBox.set('style', { fg: 'magenta' });
 
-  // 4. Console Output Panel (Right) - THE EXECUTION
   const consoleBox = grid.set(1, 7, 9, 5, (contrib as any).log({
     label: 'Command Output'
   }));
 
-  // 5. System Monitor (Bottom)
   const sysMonitor = grid.set(10, 0, 2, 12, (contrib as any).border({}))
     .set('label', 'System Status');
 
-  // --- LOGGER INTEGRATION ---
-  // Now we pass both boxes to the transport
+  // --- Event-Driven Logger Integration ---
   const tuiTransport = new TuiTransport(consoleBox, thoughtBox);
   logger.addTransport(tuiTransport);
-  logger.removeTransport(ConsoleTransport);
+
+  const cleanup = () => {
+    clearInterval(statsInterval);
+    logger.removeTransport(tuiTransport);
+    screen.destroy();
+  };
 
   const updateStats = () => {
     const freeMem = (os.freemem() / 1024 / 1024 / 1024).toFixed(2);
@@ -118,16 +110,12 @@ export async function startDashboard() {
 
   screen.key(['enter'], async () => {
     const cmd = commands[selectedIndex];
-    
     if (cmd.interactive) {
       await logger.info(`Exiting TUI to run interactive command: ${cmd.name}...`);
       screen.render();
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      logger.removeTransport(TuiTransport);
-      logger.addTransport(new ConsoleTransport());
-      
-      screen.destroy();
+
+      cleanup();
       try {
         await cmd.action();
       } catch (e) {
@@ -146,7 +134,7 @@ export async function startDashboard() {
   });
 
   screen.key(['q', 'C-c'], () => {
-    clearInterval(statsInterval);
+    cleanup();
     process.exit(0);
   });
 
