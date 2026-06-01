@@ -25,10 +25,26 @@ fi
 
 # 3. NPM Publish
 echo "📦 Publishing to NPM..."
-npm publish --access public
+
+# Load token from .env if it exists
+if [ -f .env ]; then
+  # Extract NPM_TOKEN from .env file
+  NPM_TOKEN=$(grep NPM_TOKEN .env | cut -d '=' -f2 | tr -d '"' | tr -d "'")
+fi
+
+if [ -n "$NPM_TOKEN" ]; then
+  echo "Using token from .env for publishing..."
+  # Create temporary .npmrc for the publish command
+  echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+  npm publish --access public
+  rm -f .npmrc # Clean up immediately
+else
+  echo "No NPM_TOKEN found in .env, attempting standard publish..."
+  npm publish --access public
+fi
 
 if [ $? -ne 0 ]; then
-  echo "❌ NPM publish failed. Make sure you are logged in (npm login)."
+  echo "❌ NPM publish failed. Check your token or permissions."
   exit 1
 fi
 
