@@ -2,14 +2,15 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import ora from 'ora';
 import { logger } from '../utils/logger.js';
-import { askAI } from '../utils/ai.js';
+import { askAI } from '../utils/ai/index.js';
+import chalk from 'chalk';
 
 const execPromise = promisify(exec);
 
 export async function aiCommit() {
   try {
-    // 1. Get staged changes
-    const { stdout: diff } = await execPromise('git diff --cached');
+    const { stdout } = await execPromise('git diff --cached');
+    const diff = stdout.trim();
     
     if (!diff) {
       logger.warn('No staged changes found. Please run "git add ." first.');
@@ -20,7 +21,7 @@ export async function aiCommit() {
     const prompt = `Analyze the following git diff and write a professional, concise commit message in the Conventional Commits format (e.g., feat: add login logic). Only return the message text, nothing else.`;
     
     const commitMessage = await askAI(prompt, diff);
-    spinner.succeed(null);
+    spinner.succeed('');
     
     logger.info(`Suggested message: ${chalk.bold.green(commitMessage)}`);
     
@@ -44,5 +45,3 @@ export async function aiCommit() {
     logger.error(error instanceof Error ? error.message : 'Git operation failed');
   }
 }
-
-import chalk from 'chalk';

@@ -1,4 +1,4 @@
-import { AIProvider } from '../ai/types.js';
+import { AIProvider } from '../types.js';
 
 export class OllamaProvider implements AIProvider {
   name = 'ollama';

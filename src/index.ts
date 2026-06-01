@@ -12,11 +12,11 @@ import { killPort } from './commands/network.js';
 import { makeRequest } from './commands/http.js';
 import { aiCommit } from './commands/git.js';
 import { listLocalModels } from './commands/model.js';
-import { runWorkflow, listWorkflows } from './commands/workflow.js';
+import { runWorkflow, listWorkflows, importWorkflow } from './commands/workflow.js';
 import { installPlugin, listPlugins, removePlugin } from './commands/plugin.js';
 import { startDashboard } from './tui/dashboard.js';
 import { checkLatestVersion } from './utils/api.js';
-import { loadPlugins } from './utils/plugin-loader.js';
+import { loadPlugins, activeHooks } from './utils/plugin-loader.js';
 import { trackUsage } from './utils/telemetry.js';
 import chalk from 'chalk';
 
@@ -24,13 +24,21 @@ const program = new Command();
 
 async function runSafe(fn: () => Promise<void>, commandName?: string, args: any[] = []) {
   try {
+    // 1. Execute Before Hooks
     if (commandName) {
-      // Hooks logic is handled in plugin-loader
-      // We'll assume activeHooks is handled globally or via a separate utility
-      // For simplicity, we'll just run the function here.
+      for (const hook of activeHooks.beforeCommand) {
+        await hook(commandName, args);
+      }
     }
 
     await fn();
+
+    // 2. Execute After Hooks
+    if (commandName) {
+      for (const hook of activeHooks.afterCommand) {
+        await hook(commandName, args);
+      }
+    }
   } catch (error) {
     logger.error('An unexpected error occurred:');
     if (error instanceof Error) {
@@ -106,7 +114,21 @@ async function mainMenu() {
         ]);
         if (pluginAction === 'Install Plugin') {
           const { url } = await inquirer.prompt([{ type: 'input', name: 'url', message: 'Plugin URL:' }]);
-          await runSafe(() => installPlugin(url), 'plugin-install', [url]);
+          
+          const { confirm } = await inquirer.prompt([
+            {
+              type: 'confirm',
+              name: 'confirm',
+              message: chalk.red.bold('⚠️  SECURITY WARNING: Installing a plugin executes remote code on your machine. Do you trust this source?'),
+              default: false
+            }
+          ]);
+
+          if (confirm) {
+            await runSafe(() => installPlugin(url), 'plugin-install', [url]);
+          } else {
+            logger.warn('Plugin installation cancelled for security reasons.');
+          }
         } else if (pluginAction === 'List Plugins') {
           await runSafe(listPlugins, 'plugin-list');
         } else if (pluginAction === 'Remove Plugin') {
@@ -145,7 +167,7 @@ async function mainMenu() {
 program
   .name('corox-cli')
   .description('Interactive CLI tool built with Node.js')
-  .version('1.0.0');
+  .version('1.1.0');
 
 program
   .command('dashboard')
@@ -176,8 +198,7 @@ program
   .description('Show system and node information')
   .action(async () => {
     await trackUsage('sys-info');
-    // Import needed for this specific action
-    await runSafe(() => (await import('./commands/system.js')).showSystemInfo(), 'sys-info');
+    await runSafe(showSystemInfo, 'sys-info');
   });
 
 program
@@ -197,11 +218,22 @@ program
   });
 
 program
+  .command('import <url>')
+  .description('Import professional workflows from a remote URL')
+  .action(async (url) => {
+    await trackUsage('import-workflow');
+    await runSafe(() => importWorkflow(url), 'import-workflow', [url]);
+  });
+
+program
   .command('model')
   .description('List installed local AI models (Ollama)')
   .action(async () => {
     await trackUsage('model');
-    await runSafe(() => (await import('./commands/model.js')).listLocalModels(), 'model');
+    await runSafe(async () => {
+      const { listLocalModels } = await import('./commands/model.js');
+      await listLocalModels();
+    }, 'model');
   });
 
 program
@@ -217,6 +249,7 @@ program
   .description('Make an HTTP request and show formatted output')
   .action(async (method, url) => {
     await trackUsage('request');
+    // Fix: method and url are passed as arguments
     await runSafe(() => makeRequest(method, url), 'request', [method, url]);
   });
 
@@ -273,8 +306,6 @@ program
 async function run() {
   await loadPlugins(program);
   if (!process.argv.slice(2).length) {
-    // For TUI experience, we can either keep the menu or go straight to dashboard
-    // Let's keep the menu but add "Open Dashboard" as the first option.
     await mainMenu();
   } else {
     program.parse(process.argv);

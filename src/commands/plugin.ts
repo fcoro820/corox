@@ -3,7 +3,6 @@ import path from 'path';
 import os from 'os';
 import ora from 'ora';
 import { logger } from '../utils/logger.js';
-import Table from 'cli-table3';
 
 const pluginsDir = path.join(os.homedir(), '.corox', 'plugins');
 
@@ -16,7 +15,6 @@ export async function installPlugin(url: string) {
     
     const content = await response.text();
     
-    // Extract filename from URL
     const filename = path.basename(new URL(url).pathname) || 'plugin.js';
     if (!filename.endsWith('.js')) {
       throw new Error('URL must point to a .js file');
@@ -25,7 +23,7 @@ export async function installPlugin(url: string) {
     await fs.mkdir(pluginsDir, { recursive: true });
     await fs.writeFile(path.join(pluginsDir, filename), content);
     
-    spinner.succeed(null);
+    spinner.succeed('');
     logger.success(`Plugin ${filename} installed successfully! Restart Corox to apply.`);
   } catch (error) {
     spinner.fail('Installation failed');
@@ -43,6 +41,7 @@ export async function listPlugins() {
       return;
     }
 
+    const Table = (await import('cli-table3')).default;
     const table = new Table({
       head: ['Plugin File', 'Status'],
       colWidths: [30, 15],

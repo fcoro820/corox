@@ -9,7 +9,6 @@ export async function killPort(port: string) {
   const spinner = ora(`Searching for process on port ${port}...`).start();
   
   try {
-    // Find PID using lsof (works on Linux/Mac)
     const { stdout } = await execPromise(`lsof -t -i:${port}`);
     const pid = stdout.trim();
     
@@ -21,7 +20,7 @@ export async function killPort(port: string) {
     spinner.text = `Killing process ${pid}...`;
     await execPromise(`kill -9 ${pid}`);
     
-    spinner.succeed(null);
+    spinner.succeed('');
     logger.success(`Process ${pid} on port ${port} has been terminated. ✅`);
   } catch (error) {
     spinner.fail('Failed to kill port');

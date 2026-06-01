@@ -18,7 +18,7 @@ export async function listLocalModels() {
       return;
     }
 
-    spinner.succeed(null);
+    spinner.succeed('');
     
     const table = new Table({
       head: ['Model Name', 'Size', 'Modified'],

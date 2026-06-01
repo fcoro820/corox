@@ -4,6 +4,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { logger } from './logger.js';
+import { sanitizeShellInput } from './security.js';
+import { configManager } from './config-manager.js';
+import chalk from 'chalk';
 
 const execPromise = promisify(exec);
 
@@ -23,22 +26,37 @@ export interface CoroxConfig {
 }
 
 export class WorkflowEngine {
-  private configPath = path.join(os.homedir(), '.coroxrc');
-
   async loadConfig(): Promise<CoroxConfig> {
-    try {
-      const data = await fs.readFile(this.configPath, 'utf8');
-      return JSON.parse(data);
-    } catch (error) {
-      // Return default empty config if file doesn't exist
-      return { workflows: {} };
-    }
+    return { workflows: await configManager.getWorkflows() };
   }
 
   private async resolveVariables(command: string): Promise<string> {
-    // Simple variable replacement
-    const branch = await this.getGitBranch();
-    return command.replace(/\\${branch}/g, branch);
+    const variables: Record<string, string | Promise<string>> = {
+      branch: this.getGitBranch(),
+      user: os.userInfo().username,
+      home: os.homedir(),
+      cwd: process.cwd(),
+    };
+
+    const regex = /\${(\w+)}/g;
+    const matches = [...command.matchAll(regex)];
+
+    let resolvedCommand = command;
+
+    for (const match of matches) {
+      const fullMatch = match[0];
+      const varName = match[1];
+
+      if (varName in variables) {
+        const rawValue = await (variables[varName] as Promise<string> | string);
+        const sanitizedValue = sanitizeShellInput(rawValue);
+        resolvedCommand = resolvedCommand.replace(fullMatch, sanitizedValue);
+      } else {
+        logger.warn(`Variable ${fullMatch} is not supported. Leaving as is.`);
+      }
+    }
+
+    return resolvedCommand;
   }
 
   private async getGitBranch(): Promise<string> {
@@ -60,20 +78,50 @@ export class WorkflowEngine {
 
     logger.title(`Executing Workflow: ${name}\n${workflow.description}`);
     
-    const queue: WorkflowStep[] = [];
-    
-    for (const step of workflow.steps) {
+    const steps = workflow.steps;
+    let i = 0;
+
+    while (i < steps.length) {
+      const step = steps[i];
+
       if (step.parallel) {
-        // Execute parallel block
-        const parallelSteps = [];
-        // Collect all subsequent parallel steps
-        // (In this simple version, we just run the current one in parallel)
-        parallelSteps.push(this.executeStep(step));
-        // Note: Real parallel blocks would need a different array structure in config
-        await Promise.all(parallelSteps);
+        const parallelBatch: WorkflowStep[] = [];
+        while (i < steps.length && steps[i].parallel) {
+          parallelBatch.push(steps[i]);
+          i++;
+        }
+
+        logger.info(`Running ${parallelBatch.length} steps in parallel...`);
+        
+        const results = await Promise.allSettled(
+          parallelBatch.map(s => this.executeStep(s))
+        );
+
+        results.forEach((result, index) => {
+          const stepName = parallelBatch[index].name;
+          if (result.status === 'fulfilled') {
+            const { stdout } = result.value;
+            if (stdout) {
+              console.log(chalk.cyan(`\n[${stepName}] output:`));
+              console.log(chalk.dim(stdout));
+            }
+          } else {
+            logger.error(`Step ${stepName} failed: ${result.reason}`);
+          }
+        });
+
+        if (results.some(r => r.status === 'rejected')) {
+          throw new Error(`Workflow failed during parallel execution of ${name}`);
+        }
       } else {
-        // Execute sequential
-        await this.executeStep(step);
+        try {
+          const { stdout } = await this.executeStep(step);
+          if (stdout) console.log(chalk.dim(stdout));
+        } catch (error) {
+          logger.error(`Step ${step.name} failed: ${error instanceof Error ? error.message : error}`);
+          throw error;
+        }
+        i++;
       }
     }
     
@@ -85,13 +133,10 @@ export class WorkflowEngine {
     logger.info(`Running: ${step.name}...`);
     
     try {
-      const { stdout } = await execPromise(resolvedCommand);
-      if (stdout) console.log(chalk.dim(stdout));
+      const { stdout, stderr } = await execPromise(resolvedCommand);
+      return { stdout, stderr };
     } catch (error: any) {
-      logger.error(`Step ${step.name} failed: ${error.message}`);
-      throw error;
+      throw new Error(error.message);
     }
   }
 }
-
-import chalk from 'chalk';

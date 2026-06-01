@@ -1,5 +1,5 @@
-import { AIProvider } from '../ai/types.js';
-import { env } from '../env.js';
+import { AIProvider } from '../types.js';
+import { env } from '../../env.js';
 
 export class CustomProvider implements AIProvider {
   name = 'custom';

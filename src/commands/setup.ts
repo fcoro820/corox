@@ -15,7 +15,7 @@ export async function setupProject() {
       type: 'input',
       name: 'projectName',
       message: 'Enter your project name:',
-      validate: (input) => input ? true : 'Project name cannot be empty',
+      validate: (input: string) => input ? true : 'Project name cannot be empty',
     },
     {
       type: 'select',
@@ -28,37 +28,32 @@ export async function setupProject() {
     },
   ]);
 
-  const stack = STACKS[stackKey];
+  const stack = STACKS[stackKey as keyof typeof STACKS];
   const projectPath = path.join(process.cwd(), projectName);
   const spinner = ora(`Scaffolding ${stack.name}...`).start();
   
   try {
-    // 1. Create base directory
     await fs.mkdir(projectPath, { recursive: true });
 
-    // 2. Create folder structure
     for (const folder of stack.folders) {
       await fs.mkdir(path.join(projectPath, folder), { recursive: true });
     }
 
-    // 3. Create files
     for (const [filePath, content] of Object.entries(stack.files)) {
       await fs.writeFile(path.join(projectPath, filePath), content);
     }
 
-    // 4. Handle package.json & Dependencies
     const packageJson = {
       name: projectName,
       version: '1.0.0',
       type: 'module',
       main: 'src/index.js',
-      dependencies: {},
-      devDependencies: {}
+      dependencies: {} as Record<string, string>,
+      devDependencies: {} as Record<string, string>
     };
 
-    // Add specified dependencies
     if (stack.dependencies.length > 0) {
-      stack.dependencies.forEach(dep => {
+      stack.dependencies.forEach((dep: string) => {
         packageJson.dependencies[dep] = 'latest';
       });
     }
@@ -69,16 +64,12 @@ export async function setupProject() {
     );
 
     spinner.text = 'Installing dependencies...';
-    
-    // 5. Auto-run npm install
     if (stack.dependencies.length > 0) {
       await execPromise('npm install', { cwd: projectPath });
     }
 
-    spinner.succeed(null);
+    spinner.succeed('');
     logger.success(`Project ${projectName} created with ${stack.name} stack!`);
-    logger.info(`Next steps: \n  cd ${projectName}\n  npm start`);
-
   } catch (error) {
     spinner.fail('Scaffolding failed');
     logger.error(error instanceof Error ? error.message : 'Unknown error occurred');

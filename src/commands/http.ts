@@ -11,7 +11,7 @@ export async function makeRequest(method: string, url: string) {
     const endTime = Date.now();
     const data = await response.json();
     
-    spinner.succeed(null);
+    spinner.succeed('');
     
     const table = new Table({
       head: ['Metric', 'Value'],
