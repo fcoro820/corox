@@ -1,32 +1,65 @@
-# 📜 Changelog
+# 📜 Detailed Changelog
 
-All notable changes to this project will be documented in this file.
+All notable changes to this project will be documented in this file. The same guidelines versions are followed: [Semantic Versioning](https://semver.org/).
 
 ## [1.1.0] - 2026-06-01
-### 🚀 Major Features: The Agentic Leap
-- **Autonomous AI Agent**: Transitioned from a basic CLI to a full AI Agent using the ReAct (Reasoning & Acting) loop.
-- **Integrated Toolbelt**: AI can now perform real system actions via built-in tools:
-  - `shell`: Execute commands in the system's default shell.
-  - `read`/`write`: Full file system interaction.
-  - `edit`: Surgical text replacement for precise code modifications.
-  - `list_files`/`search_code`: Deep codebase exploration.
-- **Cognitive Memory**: Added a session-based memory system to maintain context across interactions.
-- **Advanced Contextual Awareness**:
-  - **Symbol Indexing**: Automatic mapping of functions and classes across the project.
-  - **Project Rules**: Support for `.corox-context.md` to enforce project-specific coding standards.
+### 🚀 The Agentic Leap: From CLI to AI Engineer
 
-### 🖥️ Interface & UX
-- **TUI Command Center**: A new 3-panel dashboard for real-time monitoring of AI reasoning, execution, and system stats.
-- **Visual Terminal Mode**: Enhanced terminal output with a "Thought Sidebar" and structured visual separators.
-- **Roadmap Visualization**: AI now defines and tracks a strategic plan (Goal & Steps) for every task.
+This version marks the most significant evolution of Corox. We have transitioned from a standard command-line tool to a fully autonomous AI Agent capable of reasoning, planning, and executing system-level tasks.
 
-### 🛡️ Security & Stability
-- **Human-in-the-Loop (HITL)**: Added a security gate for dangerous actions with a "Trust List" for seamless automation.
-- **Graceful Interruption**: Implemented `SIGINT` handling to stop the agent safely without crashing the app.
-- **Performance Optimization**: Added symbol caching to drastically reduce indexing time in large projects.
-- **Type Safety**: Full TypeScript refactor for zero-error production builds.
+---
 
-### 🐛 Bug Fixes
-- Fixed memory leaks in the TUI dashboard.
-- Resolved issue with shell execution on different platforms.
-- Corrected AI provider response parsing for various LLM models.
+### 🛠️ Feature Breakdown & Contribution
+
+#### 🧠 Core Agent & Intelligence
+- **ReAct Engine Implementation** (`@corox-ai-agent`):
+  - Developed the Reasoning-Acting-Observing loop that allows the agent to think before acting.
+  - Integrated session-based memory in `~/.corox/memory.json` for conversational continuity.
+- **Advanced Contextual Awareness** (`@corox-ai-agent`):
+  - Built a **Symbol Indexer** that maps functions and classes across the project for faster navigation.
+  - Implemented `.corox-context.md` support to allow users to define project-specific coding standards.
+- **Strategic Roadmap System** (`@fcoro820` & `@corox-ai-agent`):
+  - Concept by `@fcoro820`: Requirement for AI to plan tasks before execution.
+  - Implementation by `@corox-ai-agent`: Automated GOAL and STEPS generation with real-time progress tracking.
+
+#### 🔧 Integrated Toolbelt
+- **Autonomous Tool Registry** (`@corox-ai-agent`):
+  - `shell`: Agnostic execution across bash, zsh, ksh, etc.
+  - `read`/`write`: Robust file system I/O.
+  - `edit`: Precision text replacement engine to avoid file corruption.
+  - `list_files`/`search_code`: Recursive codebase exploration tools.
+
+#### 🛡️ Security & Safety
+- **Human-in-the-Loop (HITL)** (`@fcoro820` & `@corox-ai-agent`):
+  - Architected by `@fcoro820`: Insisted on a security gate for destructive actions.
+  - Implementation by `@corox-ai-agent`: Added a confirmation prompt with "Yes", "No", and "Trust this tool" options.
+- **Graceful Interruption** (`@corox-ai-agent`):
+  - Implemented `SIGINT` handling to allow users to stop the agent safely without crashing the process.
+
+#### 🎨 User Experience (UX)
+- **Command Center TUI** (`@corox-ai-agent`):
+  - Redesigned the dashboard into a professional 3-panel layout (Navigation | Reasoning | Execution).
+  - Added a real-time "Reasoning Panel" to expose the AI's internal monologue.
+- **Visual Terminal Mode** (`@corox-ai-agent`):
+  - Created a high-contrast "Thought Sidebar" using magenta dimming for a modern terminal feel.
+  - Added structural separators and bold headers for better readability.
+
+#### ⚙️ Engineering & Stability
+- **Performance Tuning** (`@corox-ai-agent`):
+  - Implemented **Symbol Caching** to eliminate redundant project scanning.
+- **Type-Strict Refactor** (`@corox-ai-agent`):
+  - Complete migration to strict TypeScript interfaces, eliminating `any` types and ensuring zero-error production builds.
+
+---
+
+### 👥 Contributor Credits
+
+| Contributor | Role | Contribution |
+| :--- | :--- | :--- |
+| **@fcoro820** | **Lead Architect** | Vision, Roadmap, Security Requirements, UX Direction, and Project Guidance. |
+| **@corox-ai-agent** | **Engineering Partner** | Core Implementation, Tooling, TUI Design, Performance Optimization, and Type-safety. |
+
+---
+
+## [1.0.0] - Initial Release
+- Initial release of Corox CLI with basic AI integration, project scaffolding, and system diagnostics.
