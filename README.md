@@ -1,167 +1,111 @@
-# 🚀 Corox CLI: The Ultimate Developer Productivity Hub
+# 🚀 Corox: Your Autonomous AI Engineering Partner
 
-**Corox** is a high-performance, interactive command-line ecosystem designed to eliminate friction in the modern development lifecycle. It is not just a CLI tool; it is a **Productivity Hub** that merges AI-driven intelligence, system diagnostics, automated project scaffolding, and a full-screen TUI experience into one elegant interface.
+[![NPM Version](https://img.shields.io/npm/v/corox-cli?style=flat-square&color=blue)](https://www.npmjs.com/package/corox-cli)
+[![License](https://img.shields.io/npm/l/corox-cli?style=flat-square&color=green)](LICENSE)
+[![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://www.typescriptlang.org/)
 
-![NPM Version](https://img.shields.io/npm/v/corox-cli?style=flat-square&color=blue)
-![License](https://img.shields.io/npm/l/corox-cli?style=flat-square&color=green)
-![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)
+**Corox** is no longer just a CLI tool. It is an **Autonomous AI Agent** designed to live inside your terminal and collaborate with you on your codebase. 
 
----
-
-## 🌟 Core Pillars
-
-### 🤖 1. Hybrid AI Intelligence
-Corox removes the vendor lock-in. Through a **Provider-Agnostic Architecture**, you can switch between cutting-edge cloud LLMs and completely private local models.
-
-- **Supported Providers**: 
-  - ☁️ **Cloud**: OpenAI, Anthropic (Claude), Google (Gemini), Groq (Ultra-Fast).
-  - 🏠 **Local**: Native integration with **Ollama** for 100% privacy.
-- **Intelligence Suite**:
-  - `ai-explain`: Deep technical decomposition of complex code.
-  - `ai-fix`: Error diagnostics and step-by-step remediation.
-  - `commit`: Context-aware AI commit messages based on `git diff`.
-
-### ⚙️ 2. Workflow Automation
-Automate repetitive terminal sequences. Define complex pipelines in a `.coroxrc` file and execute them with a single command.
-
-- **Dynamic Workflows**: Sequence shell commands, handle parallel execution, and use environment-aware variables (e.g., `${branch}`).
-- **Remote Import**: Import professional workflow templates via URL to standardize team processes.
-
-### 🛠️ 3. Developer Power Tools
-Utility tools designed to solve the "small frustrations" that break developer flow:
-
-- **Industry Scaffolder**: Generate projects following Clean Architecture or Layered patterns.
-- **Port Killer**: Instantly find and terminate zombie processes blocking your ports.
-- **HTTP Client**: A lightweight API tester with beautifully formatted tabular output.
-- **Disk Purge**: Recursively find and wipe `node_modules` to reclaim gigabytes of space.
-
-### 🧩 4. Extensible Plugin System
-Corox is an open platform. You can inject new functionality without modifying the core engine.
-
-- **Dynamic Loading**: Install and load plugins at runtime via URL.
-- **Lifecycle Hooks**: Plugins can register `beforeCommand` and `afterCommand` hooks to modify behavior or add telemetry.
+Instead of just answering questions, Corox **thinks, plans, and acts**. It can explore your project, read your code, execute shell commands, and apply precise edits—all while keeping you in the loop.
 
 ---
 
-## 🖥️ Dual-Mode Interaction
+## 🌟 The Agentic Leap: What Makes Corox Different?
 
-Corox adapts to your current need:
+Most AI tools are "Chat-and-Paste". You copy code, paste it into a browser, and paste the fix back. **Corox eliminates this friction.**
 
-1. **Linear Mode (`corox <command>`)**: High-speed, prompt-driven interaction for quick tasks.
-2. **TUI Dashboard (`corox dashboard`)**: A full-screen interactive terminal dashboard featuring:
-   - Real-time system monitoring (CPU/RAM).
-   - Keyboard-driven menu navigation.
-   - Integrated persistent console output.
+### 🧠 1. Reasoning & Action (ReAct)
+Corox operates on a **Reasoning $\rightarrow$ Acting $\rightarrow$ Observing** loop. When you give it a task, it doesn't just guess; it:
+- **Plans**: Defines a high-level goal and a strategic roadmap.
+- **Acts**: Uses built-in tools to interact with your system.
+- **Observes**: Analyzes the output of those tools to refine its next step.
+
+### 🛠️ 2. The Integrated Toolbelt
+Corox has "hands" to manipulate your environment. It doesn't just suggest code; it implements it:
+- `shell`: Execute any command in your system's default shell (bash, zsh, etc.).
+- `read`: Deep-dive into any file in your project.
+- `write`: Create new files or scaffold blueprints.
+- `edit`: Perform surgical, precise text replacements without overwriting the whole file.
+- `list_files`: Map out the project structure recursively.
+- `search_code`: Find symbols or patterns across the entire codebase.
+
+### 🗺️ 3. Deep Contextual Awareness
+Corox doesn't just see the file you're in; it understands the **entire project**:
+- **Symbol Indexing**: Automatically maps functions, classes, and interfaces across your project.
+- **Project Rules**: Create a `.corox-context.md` file in your root directory. Define your coding standards, architectural preferences, or "don'ts", and Corox will follow them strictly.
+
+### 🛡️ 4. Trust, but Verify (Human-in-the-Loop)
+We believe in AI autonomy, but not at the cost of safety.
+- **Security Gate**: Every dangerous action (`shell`, `write`, `edit`) requires your approval.
+- **Trust List**: Once you trust a specific tool, you can mark it as "trusted" to allow seamless automation.
 
 ---
 
-## 📦 Installation
+## 🖥️ Dual-Mode Experience
 
-### ⚡ Quick Install (via curl)
-```bash
-curl -sSL https://raw.githubusercontent.com/fcoro820/corox/main/install.sh | bash
-```
+### ⚡ Linear Mode (`corox <command>`)
+High-speed, prompt-driven interaction for quick tasks. Perfect for "one-off" fixes or system checks.
 
-### 📦 Via NPM
+### 🎮 Command Center (`corox dashboard`)
+A full-screen TUI experience that reveals the AI's "brain".
+- **Reasoning Panel**: Watch the AI's internal monologue and roadmap in real-time.
+- **Console Panel**: See the raw output of tools and commands.
+- **System Monitor**: Keep an eye on your CPU/RAM usage while the agent works.
+
+---
+
+## 📦 Getting Started
+
+### Installation
 ```bash
 npm install -g corox-cli
 ```
 
----
-
-## 🚀 Getting Started
-
-### 1. Configuration
-Initialize your preferences, theme, and default AI provider:
+### Configuration
+Initialize your preferences and default AI provider:
 ```bash
 corox config
 ```
 
-### 2. AI API Setup
+### AI API Setup
 Create a `.env` file in your home directory or project root:
 ```env
 OPENAI_API_KEY=sk-...
 ANTHROPIC_API_KEY=sk-ant-...
 GOOGLE_API_KEY=AIza...
 GROQ_API_KEY=gsk_...
-# For Local AI, simply install Ollama and run: ollama serve
+# For Local AI, install and run Ollama (ollama serve)
 ```
 
 ---
 
-## 📖 Command Reference
+## 📖 Example Workflows
 
-### 🛠️ General Commands
-| Command | Description | Example |
-| :--- | :--- | :--- |
-| `dashboard` | Launch full-screen TUI Dashboard | `corox dashboard` |
-| `init` | Scaffold a new project from template | `corox init` |
-| `status` | Check system and tool status | `corox status` |
-| `sys-info` | Display detailed system diagnostics | `corox sys-info` |
-| `config` | Open settings menu | `corox config` |
+**The "Bug Hunter" Scenario:**
+> *"Corox, there's a bug in the authentication flow where the token doesn't expire. Can you find the cause and fix it?"*
+1. **AI** $\rightarrow$ `search_code` for "token expiry".
+2. **AI** $\rightarrow$ `read` the identified auth service file.
+3. **AI** $\rightarrow$ `edit` the logic to correctly handle timestamps.
+4. **AI** $\rightarrow$ `shell` to run `npm test` and verify the fix.
 
-### 🤖 AI Intelligence
-| Command | Description | Example |
-| :--- | :--- | :--- |
-| `ai-explain` | Explain a specific code file | `corox ai-explain src/auth.ts` |
-| `ai-fix` | Get a fix for a terminal error | `corox ai-fix "Error: EADDRINUSE"` |
-| `commit` | AI-generated conventional commit | `corox commit` |
-| `model` | List available local Ollama models | `corox model` |
-
-### ⚙️ Automation & Tools
-| Command | Description | Example |
-| :--- | :--- | :--- |
-| `run <name>` | Execute a workflow from `.coroxrc` | `corox run deploy-prod` |
-| `workflows` | List all registered workflows | `corox workflows` |
-| `import <url>` | Import remote workflow templates | `corox import https://...` |
-| `port <num>` | Kill process on specific port | `corox port 3000` |
-| `request` | Make an HTTP request | `corox request GET https://api.com` |
-| `clean <path>` | Wipe node_modules recursively | `corox clean .` |
+**The "New Feature" Scenario:**
+> *"Add a new 'User Profile' endpoint to the API following our project rules."*
+1. **AI** $\rightarrow$ `get_project_map` to see how other endpoints are structured.
+2. **AI** $\rightarrow$ `write` the new controller and route files.
+3. **AI** $\rightarrow$ `shell` to restart the server.
 
 ---
 
 ## 🏗️ Engineering Architecture
 
-Corox is engineered for scalability using professional design patterns:
-
-### 🧩 Provider Pattern (AI)
-The `AIProvider` interface abstracts the communication with different LLMs. Adding a new AI provider only requires implementing a new class without touching the core logic.
-
-### ⚡ Command Pattern (CLI)
-Each CLI action is decoupled into standalone command modules. This ensures that the `index.ts` remains a thin router, and each command can be tested and developed in isolation.
-
-### 🔄 Plugin Lifecycle
-Plugins hook into the `runSafe` execution wrapper:
-`beforeCommand` $\rightarrow$ `Command Logic` $\rightarrow$ `afterCommand`
-
-### 📁 Project Structure
-```text
-corox-cli/
-├── src/
-│   ├── commands/      # Individual command implementations
-│   ├── tui/           # Blessed-based TUI Dashboard logic
-│   ├── utils/
-│   │   ├── ai/        # AI Provider implementations (OpenAI, Ollama, etc.)
-│   │   ├── api.ts     # Version checking & remote API calls
-│   │   └── logger.ts  # Chalk-powered consistent logging
-│   ├── templates/     # Project scaffolding blueprints
-│   ├── types/         # TypeScript interfaces and types
-│   └── index.ts       # Entry point and Command Router
-├── tests/             # Vitest unit and integration tests
-└── .coroxrc           # (User-defined) Workflow configurations
-```
-
----
+Corox is built for scalability and extensibility:
+- **Provider Pattern**: Easily switch between OpenAI, Claude, Gemini, Groq, or local Ollama models.
+- **Memory System**: Session-based memory that persists in `~/.corox/memory.json`.
+- **Modular Command Pattern**: Every CLI action is a decoupled module.
 
 ## 🤝 Contributing
-
-We welcome contributions from the community! 
-
-1. **Fork** the repository.
-2. **Create** a feature branch (`git checkout -b feature/AmazingFeature`).
-3. **Commit** using Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:`).
-4. **Push** and open a Pull Request.
+We welcome contributions! Please follow the [Contributing Guide](CONTRIBUTING.md) and use Conventional Commits.
 
 ## 📄 License
 Distributed under the **ISC License**. See `LICENSE` for more information.
