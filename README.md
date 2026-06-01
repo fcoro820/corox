@@ -1,6 +1,11 @@
 # 🚀 Corox: Your Autonomous AI Engineering Partner
 
+<p align="center">
+  <img src="logo.svg" width="200" alt="Corox Logo">
+</p>
+
 [![NPM Version](https://img.shields.io/npm/v/corox-cli?style=flat-square&color=blue)](https://www.npmjs.com/package/corox-cli)
+
 [![License](https://img.shields.io/npm/l/corox-cli?style=flat-square&color=green)](LICENSE)
 [![Node Version](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen)](https://nodejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0%2B-blue)](https://www.typescriptlang.org/)
