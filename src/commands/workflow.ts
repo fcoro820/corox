@@ -1,8 +1,10 @@
 import { WorkflowEngine } from '../utils/workflow-engine.js';
 import { logger } from '../utils/logger.js';
 import Table from 'cli-table3';
-import { configManager } from '../config-manager.js';
+import { configManager } from '../utils/config-manager.js';
 import ora from 'ora';
+import chalk from 'chalk';
+import inquirer from 'inquirer';
 
 const engine = new WorkflowEngine();
 

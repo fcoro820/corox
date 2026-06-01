@@ -1,15 +1,12 @@
-import { AIProvider } from '../types.js';
+import { AIProvider, Message, ChatResponse, ToolCall } from '../types.js';
 import { env } from '../../env.js';
 
 export class OpenAIProvider implements AIProvider {
   name = 'openai';
 
-  async ask(prompt: string, context: string, options: any): Promise<string> {
+  async chat(messages: Message[], options: any): Promise<ChatResponse> {
     const apiKey = env.get('OPENAI_API_KEY');
     if (!apiKey) throw new Error('OPENAI_API_KEY not found in .env');
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
     try {
       const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -18,30 +15,41 @@ export class OpenAIProvider implements AIProvider {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`
         },
-        signal: controller.signal,
         body: JSON.stringify({
-          model: options.model || 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'You are Corox AI, a helpful expert developer assistant.' },
-            { role: 'user', content: `${prompt}\n\nContext:\n${context}` }
+          model: options.model || 'gpt-4-turbo',
+          messages: messages.map(m => ({
+            role: m.role,
+            content: m.content,
+            tool_call_id: m.tool_call_id
+          })),
+          tools: [
+            {
+              type: 'function',
+              function: {
+                name: 'shell',
+                description: 'Execute a command in the system shell.',
+                parameters: { type: 'object', properties: { command: { type: 'string' } } }
+              }
+            },
+            // Simplified for example, usually we'd pass all from ToolRegistry
           ],
+          tool_choice: 'auto'
         })
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error?.message || response.statusText;
-        throw new Error(`OpenAI Error: ${errorMessage}`);
-      }
       const data = await response.json();
-      
-      const content = data.choices?.[0]?.message?.content;
-      if (!content) {
-        throw new Error('AI Provider returned an empty response.');
-      }
-      return content;
-    } finally {
-      clearTimeout(timeoutId);
+      const message = data.choices[0].message;
+
+      return {
+        content: message.content,
+        tool_calls: message.tool_calls?.map((tc: any) => ({
+          id: tc.id,
+          name: tc.function.name,
+          arguments: JSON.parse(tc.function.arguments)
+        }))
+      };
+    } catch (error: any) {
+      throw new Error(`OpenAI Error: ${error.message}`);
     }
   }
 }

@@ -1,10 +1,10 @@
-import { AIProvider } from '../types.js';
+import { AIProvider, Message, ChatResponse } from '../types.js';
 import { env } from '../../env.js';
 
 export class GroqProvider implements AIProvider {
   name = 'groq';
 
-  async ask(prompt: string, context: string, options: any): Promise<string> {
+  async chat(messages: Message[], options: any): Promise<ChatResponse> {
     const apiKey = env.get('GROQ_API_KEY');
     if (!apiKey) throw new Error('GROQ_API_KEY not found in .env');
 
@@ -16,15 +16,26 @@ export class GroqProvider implements AIProvider {
       },
       body: JSON.stringify({
         model: options.model || 'llama3-70b-8192',
-        messages: [
-          { role: 'system', content: 'You are Corox AI, a helpful expert developer assistant.' },
-          { role: 'user', content: `${prompt}\n\nContext:\n${context}` }
-        ],
+        messages: messages,
       })
     });
 
     if (!response.ok) throw new Error(`Groq Error: ${response.statusText}`);
     const data = await response.json();
-    return data.choices[0].message.content;
+    const message = data.choices[0].message;
+
+    return {
+      content: message.content,
+      tool_calls: message.tool_calls?.map((tc: any) => ({
+        id: tc.id,
+        name: tc.function.name,
+        arguments: JSON.parse(tc.function.arguments)
+      }))
+    };
+  }
+
+  async ask(prompt: string, context: string, options: any): Promise<string> {
+    const res = await this.chat([{ role: 'user', content: `${prompt}\n\nContext:\n${context}` }], options);
+    return res.content || '';
   }
 }

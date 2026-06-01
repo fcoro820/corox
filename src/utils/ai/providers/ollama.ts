@@ -1,25 +1,29 @@
-import { AIProvider } from '../types.js';
+import { AIProvider, Message, ChatResponse } from '../types.js';
 
 export class OllamaProvider implements AIProvider {
   name = 'ollama';
 
-  async ask(prompt: string, context: string, options: any): Promise<string> {
+  async chat(messages: Message[], options: any): Promise<ChatResponse> {
     try {
-      const response = await fetch('http://localhost:11434/api/generate', {
+      const response = await fetch('http://localhost:11434/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           model: options.model || 'llama3',
-          prompt: `${prompt}\n\nContext:\n${context}`,
+          messages: messages,
           stream: false
         })
       });
 
       if (!response.ok) throw new Error(`Ollama Error: ${response.statusText}`);
       const data = await response.json();
-      return data.response;
+      
+      return {
+        content: data.message.content,
+        tool_calls: [] // Ollama tool support depends on the specific model/version
+      };
     } catch (error) {
-      throw new Error('Ollama is not running. Please start Ollama first (ollama serve).');
+      throw new Error('Ollama is not running or error occurred. Please start Ollama first (ollama serve).');
     }
   }
 }

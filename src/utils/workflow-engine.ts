@@ -49,10 +49,11 @@ export class WorkflowEngine {
 
       if (varName in variables) {
         const rawValue = await (variables[varName] as Promise<string> | string);
+        // Strict sanitization for variables to prevent injection
         const sanitizedValue = sanitizeShellInput(rawValue);
         resolvedCommand = resolvedCommand.replace(fullMatch, sanitizedValue);
       } else {
-        logger.warn(`Variable ${fullMatch} is not supported. Leaving as is.`);
+        await logger.warn(`Variable ${fullMatch} is not supported. Leaving as is.`);
       }
     }
 
@@ -76,7 +77,7 @@ export class WorkflowEngine {
       throw new Error(`Workflow "${name}" not found in .coroxrc`);
     }
 
-    logger.title(`Executing Workflow: ${name}\n${workflow.description}`);
+    await logger.title(`Executing Workflow: ${name}\n${workflow.description}`);
     
     const steps = workflow.steps;
     let i = 0;
@@ -91,7 +92,7 @@ export class WorkflowEngine {
           i++;
         }
 
-        logger.info(`Running ${parallelBatch.length} steps in parallel...`);
+        await logger.info(`Running ${parallelBatch.length} steps in parallel...`);
         
         const results = await Promise.allSettled(
           parallelBatch.map(s => this.executeStep(s))
@@ -118,25 +119,27 @@ export class WorkflowEngine {
           const { stdout } = await this.executeStep(step);
           if (stdout) console.log(chalk.dim(stdout));
         } catch (error) {
-          logger.error(`Step ${step.name} failed: ${error instanceof Error ? error.message : error}`);
+          await logger.error(`Step ${step.name} failed: ${error instanceof Error ? error.message : error}`);
           throw error;
         }
         i++;
       }
     }
     
-    logger.success(`Workflow ${name} completed successfully!`);
+    await logger.success(`Workflow ${name} completed successfully!`);
   }
 
   private async executeStep(step: WorkflowStep) {
     const resolvedCommand = await this.resolveVariables(step.command);
-    logger.info(`Running: ${step.name}...`);
+    await logger.info(`Running: ${step.name}...`);
     
     try {
       const { stdout, stderr } = await execPromise(resolvedCommand);
       return { stdout, stderr };
     } catch (error: any) {
-      throw new Error(error.message);
+      // Provide more detailed error if it's a shell error
+      const errorMsg = error.stderr ? `Shell Error: ${error.stderr}` : error.message;
+      throw new Error(errorMsg);
     }
   }
 }

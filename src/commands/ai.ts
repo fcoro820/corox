@@ -1,66 +1,57 @@
 import inquirer from 'inquirer';
-import ora from 'ora';
-import fs from 'fs/promises';
-import path from 'path';
 import { logger } from '../utils/logger.js';
-import { askAI } from '../utils/ai/index.js';
+import { AgentEngine } from '../utils/agent-engine.js';
+import { OpenAIProvider } from '../utils/ai/providers/openai.js';
+import { OllamaProvider } from '../utils/ai/providers/ollama.js';
+import { configManager } from '../utils/config-manager.js';
 
-export async function explainCode(filePath: string) {
-    const absolutePath = path.resolve(process.cwd(), filePath);
-    
-    // Security & Stability: Check file size before reading
-    const stats = await fs.stat(absolutePath);
-    const MAX_SIZE = 1 * 1024 * 1024; // 1MB limit
-    if (stats.size > MAX_SIZE) {
-      throw new Error(`File is too large (${(stats.size / 1024 / 1024).toFixed(2)}MB). Max limit is 1MB.`);
-    }
-
-    const code = await fs.readFile(absolutePath, 'utf8');
-    
-    const spinner = ora('Corox AI is analyzing your code...').start();
-    const result = await askAI('Please explain this code in detail but concisely. Use markdown for formatting.', code);
-    spinner.succeed('');
-    
-    logger.title(`Explanation for ${filePath}`);
-    console.log('\n' + result + '\n');
+async function getProvider() {
+  const providerName = await configManager.getSetting('ai_provider');
+  switch (providerName) {
+    case 'ollama': return new OllamaProvider();
+    case 'openai': return new OpenAIProvider();
+    default: return new OpenAIProvider();
   }
-
-export async function fixError(errorMessage: string) {
-    const spinner = ora('Corox AI is searching for a solution...').start();
-    const result = await askAI('I encountered this error in my project. How do I fix it? Provide a step-by-step solution.', errorMessage);
-    spinner.succeed('');
-    
-    logger.title('Suggested Fix');
-    console.log('\n' + result + '\n');
-  }
+}
 
 export async function aiMenu() {
-  const { action } = await inquirer.prompt([
-    {
-      type: 'select',
-      name: 'action',
-      message: 'What can Corox AI do for you?',
-      choices: ['Explain Code', 'Fix Error', 'Back to Main Menu'],
-    },
-  ]);
+  const provider = await getProvider();
+  const agent = new AgentEngine(provider);
 
-  if (action === 'Explain Code') {
-    const { filePath } = await inquirer.prompt([
+  logger.title('Corox AI Agent 🤖');
+  logger.info('I now have Memory and Built-in Tools (shell, read, write, edit).');
+  logger.info('I can modify your files and execute commands directly.');
+
+  while (true) {
+    const { input } = await inquirer.prompt([
       {
         type: 'input',
-        name: 'filePath',
-        message: 'Enter the path to the file:',
+        name: 'input',
+        message: 'Ask me to do something (e.g., "Create a new test file and run it") or type "exit":',
       },
     ]);
-    await explainCode(filePath);
-  } else if (action === 'Fix Error') {
-    const { errorMessage } = await inquirer.prompt([
-      {
-        type: 'input',
-        name: 'errorMessage',
-        message: 'Paste the error message:',
-      },
-    ]);
-    await fixError(errorMessage);
+
+    if (input.toLowerCase() === 'exit') break;
+
+    try {
+      const response = await agent.run(input);
+      console.log(`\nAI: ${response}\n`);
+    } catch (error: any) {
+      await logger.error(`Agent Error: ${error.message}`);
+    }
   }
+}
+
+export async function explainCode(filePath: string) {
+  const provider = await getProvider();
+  const agent = new AgentEngine(provider);
+  const response = await agent.run(`Please explain the following file: ${filePath}`);
+  console.log(`\nAnalysis:\n${response}`);
+}
+
+export async function fixError(errorMessage: string) {
+  const provider = await getProvider();
+  const agent = new AgentEngine(provider);
+  const response = await agent.run(`I encountered this error: "${errorMessage}". Can you fix it for me?`);
+  console.log(`\nSolution:\n${response}`);
 }

@@ -39,7 +39,8 @@
     "conf": "^12.0.0",
     "dotenv": "^16.4.5",
     "inquirer": "^9.2.15",
-    "ora": "^8.0.1"
+    "ora": "^8.0.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@types/blessed": "^0.1.27",

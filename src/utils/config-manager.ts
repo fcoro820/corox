@@ -2,22 +2,32 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import chalk from 'chalk';
+import { z } from 'zod';
+import { logger } from './logger.js';
 
-export interface CoroxConfig {
-  settings: {
-    ai_provider: string;
-    ai_model: string;
-    theme: string;
-  };
-  workflows: Record<string, {
-    description: string;
-    steps: Array<{
-      name: string;
-      command: string;
-      parallel?: boolean;
-    }>;
-  }>;
-}
+// Define Zod Schema for Config Validation
+const StepSchema = z.object({
+  name: z.string().min(1),
+  command: z.string().min(1),
+  parallel: z.boolean().optional(),
+});
+
+const WorkflowSchema = z.object({
+  description: z.string().optional(),
+  steps: z.array(StepSchema),
+});
+
+const ConfigSchema = z.object({
+  settings: z.object({
+    ai_provider: z.string().default('openai'),
+    ai_model: z.string().default('gpt-3.5-turbo'),
+    theme: z.string().default('dark'),
+  }),
+  trustedTools: z.array(z.string()).default([]),
+  workflows: z.record(z.string(), WorkflowSchema).default({}),
+});
+
+type CoroxConfig = z.infer<typeof ConfigSchema>;
 
 const DEFAULT_CONFIG: CoroxConfig = {
   settings: {
@@ -25,6 +35,7 @@ const DEFAULT_CONFIG: CoroxConfig = {
     ai_model: 'gpt-3.5-turbo',
     theme: 'dark',
   },
+  trustedTools: [],
   workflows: {},
 };
 
@@ -36,21 +47,29 @@ class ConfigManager {
       const data = await fs.readFile(this.configPath, 'utf8');
       const parsed = JSON.parse(data);
       
-      return {
-        settings: { ...DEFAULT_CONFIG.settings, ...parsed.settings },
-        workflows: { ...DEFAULT_CONFIG.workflows, ...parsed.workflows },
-      };
+      // Validate with Zod
+      const result = ConfigSchema.safeParse(parsed);
+      
+      if (!result.success) {
+        await logger.warn('Config validation failed. Some settings will be reverted to defaults.');
+        result.error.issues.forEach(issue => {
+          console.log(chalk.dim(`- ${issue.path.join('.')} ${issue.message}`));
+        });
+        return { ...DEFAULT_CONFIG, ...result.data };
+      }
+      
+      return result.data;
     } catch (error: any) {
       if (error.code !== 'ENOENT') {
-        console.error(chalk.red('❌ Config corruption detected in .coroxrc.json. Reverting to defaults.'));
+        await logger.error('Config corruption detected in .coroxrc.json. Reverting to defaults.');
       }
       return { ...DEFAULT_CONFIG };
     }
   }
 
-  async set(key: 'settings' | 'workflows', value: any): Promise<void> {
+  async set(key: 'settings' | 'workflows' | 'trustedTools', value: any): Promise<void> {
     const config = await this.load();
-    config[key] = value;
+    (config as any)[key] = value;
     await fs.writeFile(this.configPath, JSON.stringify(config, null, 2), 'utf8');
   }
 
