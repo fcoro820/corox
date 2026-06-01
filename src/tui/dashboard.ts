@@ -2,8 +2,8 @@ import blessed from 'blessed';
 import contrib from 'blessed-contrib';
 import os from 'os';
 import { logger } from '../utils/logger.js';
-import { showSystemInfo } from '../commands/system.js';
 import { setupProject } from '../commands/setup.js';
+import { showSystemInfo } from '../commands/system.js';
 import { cleanModules } from '../commands/clean.js';
 import { listLocalModels } from '../commands/model.js';
 
@@ -13,24 +13,21 @@ export async function startDashboard() {
     title: 'Corox Dashboard'
   });
 
-  // Layout Grid
-  const grid = new contrib.grid({ rows: 12, cols: 12, cellWidth: 40 });
+  const grid = new (contrib.grid as any)({ rows: 12, cols: 12, screen: screen });
 
-  // 1. Header
-  const header = grid.set(0, 0, 1, 12, contrib.border({}))
+  const header = grid.set(0, 0, 1, 12, (contrib as any).border({}))
     .set('style', { fg: 'cyan', bold: true });
-  header.setContent('🚀 COROX INTERACTIVE DASHBOARD v1.0.0');
+  header.setContent('🚀 COROX INTERACTIVE DASHBOARD v1.1.0');
 
-  // 2. Sidebar Menu
-  const menu = grid.set(1, 0, 9, 3, contrib.border({}))
+  const menu = grid.set(1, 0, 9, 3, (contrib as any).border({}))
     .set('label', 'Menu');
 
   const commands = [
-    { name: 'Setup Project', action: setupProject },
-    { name: 'System Info', action: showSystemInfo },
-    { name: 'Clean Modules', action: cleanModules },
-    { name: 'Local Models', action: listLocalModels },
-    { name: 'Exit Dashboard', action: () => process.exit(0) },
+    { name: 'Setup Project', action: setupProject, interactive: true },
+    { name: 'System Info', action: showSystemInfo, interactive: false },
+    { name: 'Clean Modules', action: cleanModules, interactive: false },
+    { name: 'Local Models', action: listLocalModels, interactive: false },
+    { name: 'Exit Dashboard', action: () => process.exit(0), interactive: false },
   ];
 
   let selectedIndex = 0;
@@ -38,20 +35,16 @@ export async function startDashboard() {
     let menuText = '';
     commands.forEach((cmd, idx) => {
       const prefix = idx === selectedIndex ? '👉 ' : '  ';
-      const style = idx === selectedIndex ? '{bold}{cyan}' : '';
-      menuText += `${prefix}${style}${cmd.name}{/}\n`;
+      menuText += `${prefix}${cmd.name}\n`;
     });
     menu.setContent(menuText);
   };
 
-  // 3. Main Console / Output
-  const consoleBox = grid.set(1, 3, 9, 9, contrib.log({
-    label: 'Console Output',
-    style: { fg: 'white' }
+  const consoleBox = grid.set(1, 3, 9, 9, (contrib as any).log({
+    label: 'Console Output'
   }));
 
-  // 4. System Monitor (Footer)
-  const sysMonitor = grid.set(10, 0, 2, 12, contrib.border({}))
+  const sysMonitor = grid.set(10, 0, 2, 12, (contrib as any).border({}))
     .set('label', 'System Status');
 
   const updateStats = () => {
@@ -61,14 +54,14 @@ export async function startDashboard() {
     sysMonitor.setContent(`CPU Load: ${cpuLoad} | RAM: ${freeMem}GB / ${totalMem}GB | Platform: ${os.platform()}`);
   };
 
-  // Intercept console.log for the dashboard
   const originalLog = console.log;
   console.log = (...args) => {
-    consoleBox.log(args.join(' '));
+    if (consoleBox && typeof consoleBox.log === 'function') {
+      consoleBox.log(args.join(' '));
+    }
     originalLog(...args);
   };
 
-  // Keyboard Navigation
   screen.key(['up'], () => {
     selectedIndex = Math.max(0, selectedIndex - 1);
     renderMenu();
@@ -83,22 +76,39 @@ export async function startDashboard() {
 
   screen.key(['enter'], async () => {
     const cmd = commands[selectedIndex];
-    consoleBox.log(`\n${chalk.cyan('Executing: ' + cmd.name + '...')}`);
+    
+    if (cmd.interactive) {
+      consoleBox.log(`\nExiting TUI to run interactive command: ${cmd.name}...`);
+      screen.render();
+      // Give it a moment to render before destroying
+      await new Promise(resolve => setTimeout(resolve, 100));
+      screen.destroy();
+      try {
+        await cmd.action();
+      } catch (e) {
+        console.error(`Error: ${e instanceof Error ? e.message : String(e)}`);
+      }
+      // We don't automatically restart the dashboard here to avoid 
+      // potential recursive issues and let the user decide.
+      return;
+    }
+
+    consoleBox.log(`\nExecuting: ${cmd.name}...`);
     try {
       await cmd.action();
     } catch (e) {
-      consoleBox.log(chalk.red('Error executing command'));
+      consoleBox.log(`Error: ${e instanceof Error ? e.message : String(e)}`);
     }
     screen.render();
   });
 
-  screen.key(['q', 'C-c'], () => process.exit(0));
+  screen.key(['q', 'C-c'], () => {
+    clearInterval(statsInterval);
+    process.exit(0);
+  });
 
-  // Initial Render
   renderMenu();
   updateStats();
-  setInterval(updateStats, 2000);
+  const statsInterval = setInterval(updateStats, 2000);
   screen.render();
 }
-
-import chalk from 'chalk';
