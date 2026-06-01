@@ -27,10 +27,33 @@ class MemoryManager {
 
   addMessage(msg: Message) {
     this.currentSession.push(msg);
-    // Keep memory lean: limit to last 20 messages
-    if (this.currentSession.length > 20) {
-      this.currentSession = this.currentSession.slice(-20);
+    this.optimizeMemory();
+  }
+
+  private optimizeMemory() {
+    const MAX_HISTORY = 30;
+    if (this.currentSession.length <= MAX_HISTORY) return;
+
+    // PRIORITY-BASED CONTEXT WINDOW
+    // Keep: System prompts, Goals, and critical milestones
+    const priorityMessages: Message[] = [];
+    const normalMessages: Message[] = [];
+
+    for (const msg of this.currentSession) {
+      const isSystem = msg.role === 'system';
+      const isGoal = msg.content.includes('GOAL:') || msg.content.includes('STEPS:');
+      const isMilestone = msg.content.toLowerCase().includes('step completed');
+
+      if (isSystem || isGoal || isMilestone) {
+        priorityMessages.push(msg);
+      } else {
+        normalMessages.push(msg);
+      }
     }
+
+    // Keep priority messages + last N normal messages
+    const prunedNormal = normalMessages.slice(-15);
+    this.currentSession = [...priorityMessages, ...prunedNormal];
   }
 
   getHistory(): Message[] {
