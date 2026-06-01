@@ -25,7 +25,7 @@ fi
 
 # 3. NPM Publish
 echo "📦 Publishing to NPM..."
-npm publish
+npm publish --access public
 
 if [ $? -ne 0 ]; then
   echo "❌ NPM publish failed. Make sure you are logged in (npm login)."
