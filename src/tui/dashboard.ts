@@ -52,7 +52,7 @@ export async function startDashboard() {
   // 1. Header
   const header = grid.set(0, 0, 1, 12, (contrib as any).border({}))
     .set('style', { fg: 'cyan', bold: true });
-  header.setContent('🚀 COROX AI COMMAND CENTER v1.1.0');
+  header.setContent('🚀 COROX AI COMMAND CENTER v1.2.0');
 
   // 2. Menu Panel (Left)
   const menu = grid.set(1, 0, 9, 3, (contrib as any).border({}))
